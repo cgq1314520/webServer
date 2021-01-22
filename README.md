@@ -24,7 +24,6 @@
 - SingleThread.java文件为服务器单线程模型的核心处理部分，包括对于BS中浏览器请求的接收以及逻辑处理，逻辑处理的核心在service方法中
 
 #### 2.com.server.MultiThread包下的代码实现的是服务器的==多线程模型==
-
 <img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210121132537584.png" alt="image-20210121132537584" style="zoom:80%;" />
 
 目的：为了解决单线程中多个http请求阻塞在accept()处等待的缺点，提高请求的并发量
