@@ -34,7 +34,7 @@
 - SingleThread.java文件为服务器多线程模型的核心处理部分，包括对于BS中浏览器请求的接收以及逻辑处理，逻辑处理的核心在service方法中
 
 #### 3.Thread_Pool包下的代码实现时服务器的==线程池模型==
-
+![image-1](https://github.com/cgq1314520/blog-img/blob/main/banner2.jpg)
 ![image-20210121130835952](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210121130835952.png)
 
 目的：解决线程连续创建和删除的开销，建立线程池进行对任务的处理，节省连续的线程创建销毁造成的开销
