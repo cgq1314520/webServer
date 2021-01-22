@@ -24,7 +24,8 @@
 - SingleThread.java文件为服务器单线程模型的核心处理部分，包括对于BS中浏览器请求的接收以及逻辑处理，逻辑处理的核心在service方法中
 
 #### 2.com.server.MultiThread包下的代码实现的是服务器的==多线程模型==
-<img src="C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210121132537584.png" alt="image-20210121132537584" style="zoom:80%;" />
+
+<img src="https://github.com/cgq1314520/blog-img/blob/main/image-20210121132537584.png" alt="image-20210121132537584" style="zoom:80%;" />
 
 目的：为了解决单线程中多个http请求阻塞在accept()处等待的缺点，提高请求的并发量
 
@@ -34,8 +35,7 @@
 - SingleThread.java文件为服务器多线程模型的核心处理部分，包括对于BS中浏览器请求的接收以及逻辑处理，逻辑处理的核心在service方法中
 
 #### 3.Thread_Pool包下的代码实现时服务器的==线程池模型==
-![image-1](https://github.com/cgq1314520/blog-img/blob/main/banner2.jpg)
-![image-20210121130835952](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210121130835952.png)
+![image-20210121130835952](https://github.com/cgq1314520/blog-img/blob/main/image-20210121130835952.png)
 
 目的：解决线程连续创建和删除的开销，建立线程池进行对任务的处理，节省连续的线程创建销毁造成的开销
 
@@ -48,7 +48,7 @@
 
 代码的核心逻辑即为实现了下图所示的关系
 
-![image-20210121130800120](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210121130800120.png)
+![image-20210121130800120](https://github.com/cgq1314520/blog-img/blob/main/image-20210121130800120.png)
 
 目的：将对http请求的处理部分划分（实现类似流水线的操作），从而使得线程池中接收请求的部分可以更快的响应来自客户端的请求
 
@@ -67,7 +67,7 @@
 
 接下来请牢记http请求和响应的报文格式;
 
-![image-20210120113049431](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210120113049431.png)
+![image-20210120113049431](https://github.com/cgq1314520/blog-img/blob/main/image-20210120113049431.png)
 
 **请求报文的实例：**
 
@@ -103,19 +103,19 @@
 
 对于流媒体的响应也是通过HTTP协议进行直接传输的，也即如视频、音频等的传输，其实就是http请求的$*/*$这种请求中包含的内容，但是我们又知道一般所有的流媒体，他们占用的内存都比较大，所以其实是在我们点击时才开始响应的，==同时服务端对于流媒体的数据流响应，即使我们用的是while循环一只写，但是在这个里面其实当写一部分流媒体内容后就会停止了，以保证响应的快速==，其实就是下面的这种效果
 
-![image-20210120170436982](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210120170436982.png)
+![image-20210120170436982](https://github.com/cgq1314520/blog-img/blob/main/image-20210120170436982.png)
 
 也即上面的四个流媒体，当我们点击其中一个音频或者视频时，我们必须要等到该视频播放完后，点击另外一首才能开始播放，否则是没有效果的，造成这个的主要原因是由于我们的服务端是单线程的，由于之前我们说的，对于流媒体在while循环里面即使是一直在写出，但是由于为了快速响应，所以在写出一段后就会等待，等到播放到这儿后才会继续进行传输，所以这也是为什么当当前的一首播放时，另外一首不能播放的原因，因为当前是单线程，所以其实是阻塞在while循环里面，等待着给客户端输出流的，所以等到一首播放完之后，才能回到while（true）的部分继续接受响应。具体的流传输如下代码所示：
 
-![image-20210120171357113](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210120171357113.png)
+![image-20210120171357113](https://github.com/cgq1314520/blog-img/blob/main/image-20210120171357113.png)
 
 所以在上面的这种单线程模型下，如果一首歌没有播放完，那么点击其他的播放按钮就不会响应，这是因为当前的一个音频还阻塞在while循环这儿，所以没有响应，同时这个也是为什么在响应html之后，输出中会抛出异常的原因；
 
 单线程请求时异常为：
 
-![image-20210120172521760](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210120172521760.png)
+![image-20210120172521760](https://github.com/cgq1314520/blog-img/blob/main/image-20210120172521760.png)
 
-![image-20210120172551323](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210120172551323.png)
+![image-20210120172551323](https://github.com/cgq1314520/blog-img/blob/main/image-20210120172551323.png)
 
 ?       单线程模型代码如下：
 
