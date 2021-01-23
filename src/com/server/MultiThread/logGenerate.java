@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 程序功能：读取配置文件，并进行日志输出
@@ -64,15 +65,17 @@ public class logGenerate {
         switch (type){
             case FORBIDDEN:
                 client.getOutputStream().write(type.getName().getBytes());
-                logInf.append("Forbidden"+content);
+                logInf.append("Forbidden").append(content);
                 break;
             case NOTFOUND:
                 client.getOutputStream().write(type.getName().getBytes());
-                logInf.append("Not found"+content);
+                logInf.append("Not found").append(content);
                 break;
             case LOG:
-                logInf.append("LOG_INFO:"+content);
+                logInf.append("LOG_INFO:").append(content);
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + type);
         }
         //下面为具体的日志记录，上面是日志信息的联合和错误页面的响应
         //将日志信息记录到日志文件中去，通过日志生成程序来进行写入
@@ -82,20 +85,21 @@ public class logGenerate {
         //根据配置文件中的东西进行日志文件的创建，从webLog_1.txt文件开始找，直至找到一个文件的大小小于size兆的
         //这个时候才开始进行日志文件的写入，或者是日志文件的创建
         if(control.equals("open")){
-            File file=null;
+            File file;
             FileWriter fileWriter=null;
             try{
                 //先判断待输出的目录是否存在
-                File directory=new File(location);
-                if(!directory.exists()){
-                    directory.mkdirs();
+                AtomicReference<File> directory= new AtomicReference<>(new File(location));
+                if (!directory.get().exists()) {
+                    directory.get().mkdirs();
                 }
+
                 for (int i = 0; ; i++) {
                     file =new File(location+"webLog_"+i+".txt");
                     //先判断文件是否存在，如果不存在，则直接创建文件；如果存在，则再判断文件的大小是否超过了size兆
                     //如果超过了size兆，则直接进入下一次循环，进行新的文件的创建
                     if(!file.exists()){
-                        file.createNewFile(); //创建文件
+                        boolean newFile = file.createNewFile();//创建文件
                         break;
                     }
                     //如果文件存在且小于5K(即5*1024)，则退出循环后进行日志的写入

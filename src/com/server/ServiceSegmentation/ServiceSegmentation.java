@@ -3,6 +3,8 @@ package com.server.ServiceSegmentation;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -12,11 +14,11 @@ import java.util.concurrent.ThreadPoolExecutor;
  */
 public class ServiceSegmentation {
     //第一步：获取用来处理浏览器请求线程的线程池
-    public static ThreadPoolExecutor ReadHttpRequestPool=null;
+    public static ThreadPoolExecutor ReadHttpRequestPool;
     //第二步：获取用来读取文件内容线程的线程池
-    public static ThreadPoolExecutor ReadFilePool=null;
+    public static ThreadPoolExecutor ReadFilePool;
     //第一步：获取用来将读取到的文件内容响应到客户端的线程的线程池
-    public static ThreadPoolExecutor WriteHttpResponsePool=null;
+    public static ThreadPoolExecutor WriteHttpResponsePool;
     static{
         ReadHttpRequestPool=ThreadPools.getReadHttpRequestPool();
         ReadFilePool=ThreadPools.getReadFilePool();
@@ -28,7 +30,6 @@ public class ServiceSegmentation {
      * @param client 连接到浏览器的通道
      */
     public static void getFileName(Socket client){
-        FileInputStream fis=null;
         try {
             //使用Socket对象中的方法getInputStream,获取到网络字节输入流InputStream对象
             InputStream is = client.getInputStream();
@@ -61,13 +62,7 @@ public class ServiceSegmentation {
                     filePath.append(arr[1].substring(1));
                 }
                 //创建一个本地字节输入流,构造方法中绑定BS中浏览器请求的文件路径，用于返回
-                try{
-                    //也许请求的文件不存在，所以在这儿，我们要进行异常捕获，当有异常时，就给浏览器返回NOTFOUND的错误
-                    fis = new FileInputStream(filePath.toString());
-                }catch (FileNotFoundException fileNotFoundException){
-                    //给浏览器返回文件NOTFOUND的错误并关闭socket通道
-                    logGenerate.logger(LoggerType.NOTFOUND,filePath.append("没有找到").toString(),client);
-                }
+                //也许请求的文件不存在，所以在这儿，我们要进行异常捕获，当有异常时，就给浏览器返回NOTFOUND的错误
                 //程序运行到这儿说明请求的文件存在，所以进行第2种任务的生成
                 ThreadPools.DealReadFile dealReadFile = new ThreadPools.DealReadFile(client, filePath.toString());
                 //通知第二类线程池开始任务的处理了
@@ -75,7 +70,7 @@ public class ServiceSegmentation {
             }
 
         }catch (IOException e){
-            e.printStackTrace();
+          //  e.printStackTrace();
         }
     }
     /**
@@ -83,36 +78,30 @@ public class ServiceSegmentation {
      * @param client 连接到浏览器的通道
      * @param fileName 用来读取文件内容的全文件名，是全路径
      */
-    public static void getFileContentByFileName(String fileName, Socket client) {
-        FileInputStream fis= null;
+    public static void getFileContentByFileName(String fileName, Socket client){
+        FileInputStream fis;
         try {
-            byte[] con=new byte[Integer.MAX_VALUE/10];
+            byte[] con=new byte[Integer.MAX_VALUE/100];
             System.out.println(fileName);
             fis = new FileInputStream(fileName);
-            int len = 0;
+            int len;
             byte[] bytes = new byte[2048];
             int len1=0;
             while((len = fis.read(bytes))!=-1){
-                for (int i = 0; i <len; i++) {
-                    con[i+len1]=bytes[i];
-                }
-                len1+=len;
+                System.arraycopy(bytes, 0, con, len1, len);
+                len1 = len1 + len;
             }
             //文件读取完成之后进行第三类任务的生成
             ThreadPools.DealWriteHttpResponse dealWriteHttpResponse = new ThreadPools.DealWriteHttpResponse(client,con,len1);
             //通过第三类线程池进行对于任务的执行
             WriteHttpResponsePool.execute(dealWriteHttpResponse);
         } catch (IOException fileNotFoundException) {
-            fileNotFoundException.printStackTrace();
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            //文件找不到则日志输出404页面
+            logGenerate.logger(LoggerType.NOTFOUND,"您所请求的网页不存在",client);
+          //  fileNotFoundException.printStackTrace();
         }
     }
-    public static void wirteFileContentToBrowser(Socket client, byte[] fileContent,int fileLength) {
+    public static void writeFileContentToBrowser(Socket client, byte[] fileContent,int fileLength) {
         try{
             //程序运行到这儿说明请求的文件存在，所以使用Socket中的方法getOutputStream获取网络字节输出流OutputStream对象
             OutputStream os = client.getOutputStream();
@@ -126,14 +115,13 @@ public class ServiceSegmentation {
             //把请求的文件内容写入响应体中
             os.write(fileContent,0,fileLength);
         } catch (IOException e) {
-            e.printStackTrace();
+           // e.printStackTrace();
         }
         finally {
             try {
-                Thread.sleep(1000);
                 client.close();
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+            } catch (IOException e) {
+              //  e.printStackTrace();
             }
         }
 
@@ -147,16 +135,18 @@ public class ServiceSegmentation {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        /**
-         * 需要注意的是我们需要知道浏览器在每遇到一个图片或者其他时都会发生一次http请求，所以说在一个网页中其实
-         * 是由很多个请求构建在一起的，所以我们需要对每一次的请求都进行响应（即使是告诉浏览器，要请求的数据都不存在
-         * ），否则就会阻塞在一处;
-         * 也即浏览器中的图片、视频、音频等都是一个单独的http请求
-         */
+        if(server!=null){
+            System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())+"：web服务器启动成功");
+        }
+        // 需要注意的是我们需要知道浏览器在每遇到一个图片或者其他时都会发生一次http请求，所以说在一个网页中其实
+        // 是由很多个请求构建在一起的，所以我们需要对每一次的请求都进行响应（即使是告诉浏览器，要请求的数据都不存在
+        // ），否则就会阻塞在一处;
+        // 也即浏览器中的图片、视频、音频等都是一个单独的http请求
         while(true){
-            Socket client=null;
+            Socket client;
             try {
                 //获取和browser连接的客户端通道
+                assert server != null;
                 client=server.accept();
                 if(client!=null){
                     //通过这个连接通道构建任务
@@ -168,7 +158,7 @@ public class ServiceSegmentation {
                     System.out.println("正在活动的线程数："+ReadHttpRequestPool.getActiveCount());
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+             //   e.printStackTrace();
             }
         }
     }

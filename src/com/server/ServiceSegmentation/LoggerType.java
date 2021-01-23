@@ -13,8 +13,8 @@ public enum LoggerType {
             "<html><head>\r\n" +
             "<title>403 Forbidden</title>\r\n" +
             "</head><body>\r\n" +
-            "<h1>Forbidden</h1>\r\n " +
-            "The requested URL, file type or operation is not allowed on this simple static file webserver.\r\n" +
+            "<h1 text-align:center>Forbidden</h1>\r\n " +
+            "<h3 text-align:center>The requested URL, file type or operation is not allowed on this simple static file webserver.</h3>\r\n" +
             "</body></html>\r\n"),
     NOTFOUND("HTTP/1.1 404 Not Found\r\n" +
             "Connection: close\r\n" +
@@ -22,8 +22,8 @@ public enum LoggerType {
             "<html><head>\r\n" +
             "<title>404 Not Found</title>\r\n" +
             "</head><body>\r\n" +
-            "<h1>Not found</h1>\r\n " +
-            "The requested URL, file was not found on this server.\r\n" +
+            "<h1 text-align:center>Not found</h1>\r\n " +
+            "<h3 text-align:center>The requested URL, file was not found on this server.</h3>\r\n" +
             "</body></html>\r\n"),
     LOG("LOG");
     private final String name;

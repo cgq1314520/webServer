@@ -111,7 +111,7 @@ public class logGenerate {
                 //第一步：写入给定格式的日期-使用Date和SimpleDateFormat获取本地当前时间并制定格式
                 Date d = new Date();
                 SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-                String log="单线程模型  Logger-Date：" + sdf.format(d);
+                String log="页面缓存模型  Logger-Date：" + sdf.format(d);
                 //打开一个写文件器，构造函数中的第二个参数true表示以追加形式写文件
                 fileWriter = new FileWriter(file,true);
                 fileWriter.write(log+"\r\n");

@@ -58,31 +58,36 @@ public class logGenerate {
      * @param content 日志或者错误页面的标志部分
      * @param client  连接通道
      */
-    protected static void logger(LoggerType type, String content, Socket client) throws IOException {
+    protected static void logger(LoggerType type, String content, Socket client){
         //用来存储连接后的日志信息
         StringBuilder logInf=new StringBuilder();
-        switch (type){
-            case FORBIDDEN:
-                client.getOutputStream().write(type.getName().getBytes());
-                logInf.append("Forbidden"+content);
-                break;
-            case NOTFOUND:
-                client.getOutputStream().write(type.getName().getBytes());
-                logInf.append("Not found"+content);
-                break;
-            case LOG:
-                logInf.append("LOG_INFO:"+content);
-                break;
+        try {
+            switch (type) {
+                case FORBIDDEN:
+                    client.getOutputStream().write(type.getName().getBytes());
+                    logInf.append("Forbidden").append(content);
+                    break;
+                case NOTFOUND:
+                    client.getOutputStream().write(type.getName().getBytes());
+                    logInf.append("Not found").append(content);
+                    break;
+                case LOG:
+                    logInf.append("LOG_INFO:").append(content);
+                    break;
+            }
+            //下面为具体的日志记录，上面是日志信息的联合和错误页面的响应
+            //将日志信息记录到日志文件中去，通过日志生成程序来进行写入
+            logGenerate.logGene(logInf.toString());
+        } catch (IOException e) {
+            logGenerate.logGene("LOG_INFO:管道输出流异常");
+            //e.printStackTrace();
         }
-        //下面为具体的日志记录，上面是日志信息的联合和错误页面的响应
-        //将日志信息记录到日志文件中去，通过日志生成程序来进行写入
-        logGenerate.logGene(logInf.toString());
     }
     protected static void logGene(String logInfo){
         //根据配置文件中的东西进行日志文件的创建，从webLog_1.txt文件开始找，直至找到一个文件的大小小于size兆的
         //这个时候才开始进行日志文件的写入，或者是日志文件的创建
         if(control.equals("open")){
-            File file=null;
+            File file;
             FileWriter fileWriter=null;
             try{
                 //先判断待输出的目录是否存在
