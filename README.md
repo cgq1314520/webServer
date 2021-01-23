@@ -58,13 +58,27 @@
 - LoggerType.JAVA文件为日志类型的声明，同单线程中功能
 - SingleThread.java文件为服务器业务分割模型的核心处理部分，包括对于BS中浏览器请求的接收以及逻辑处理，在业务分割模型中对于从客户端接收到的请求的处理划分为了好几个部分（也即业务分割），所以其核心的逻辑处理部分有了很大的变动，也即其中的service方法有了很大的变动，其实就是将service方法通过线程池和任务的调节，转换为有多个函数的执行，具体见代码
 
+#### 5.pageCache包下的代码实现服务器的页面缓存模型
+对于页面缓存的核心逻辑实现是通过以下的哈希表结构实现的
+![image-1](https://github.com/cgq1314520/blog-img/blob/main/1.png)
+也即对于页面的缓存其实就是通过一个hash表的结构进行缓存的，其中对于页面的替换算法实现了如LRU\LFU等的页面替换算法
+
+- log.properties同单线程模型所述
+- logGenerate.java文件为具体的日志生成的程序，同单线程中功能
+- LoggerType.JAVA文件为日志类型的声明，同单线程中功能
+- HashBucketCache.java文件为自定义的hash表结构，是页面缓存模型的核心部分，其中主要实现的功能包括页面的缓存、页面的替换条件的判定以及缓存内容的获取
+- pageCache.java文件也为页面缓存模型的核心部分，主要包括对于浏览器请求的处理、根据页面的名字判断请求页是否缓存，同时通过是否缓存决定请求页内容的来源，也即是从缓存（即从内存中得到，所以非常快）中取得，还是从硬盘中取得（也即通过文件流读取，所以非常慢）
+
+#### 6.fileSystem包下的代码实现了服务器的文件系统模型
+对于文件系统模型的web浏览器，其更适合于一些页面多且小（同时不变性高）的文件，就比如说有10万个文件（就比如说淘宝页面中的10万张图片，为什么可以加载这么快，其实就相当于是一个图片服务器的感觉），且每一个文件的大小都很小，这个时
+候我们就可以把这10万个网页作为一个文件系统来处理；
+也即在服务器启动时，将10万个网页都写入到一个文件中，同时通过一个hash结构来记录每个网页在这个大文件中的起始位置、长度以及文件名称信息，那么当服务器完全启动之后，我们就将所有的这些小的文件都统筹到了一个大的文件中，且都加载到了内存里面，而且与此同时我们还得到了一个10万个网页在这个大文件里面的存储的位置以及长度的hash结构，那么在这个时候，如果浏览器发送了一个请求，我们就可以通过这个hash结构以及已经在内存中的文件信息将请求的文件快速的响应给浏览器，这两者的搭配将使得我们的web浏览器的响应速度大大增加。
+
 **注意了：**
 
-在http请求报文中最重要的部分就是--请求行--这部分了，除此之外有时候还会用到首部行中的host主机IP属性和cookies信息，其他的部分都不太重要；由于我们需要实现的是一个静态的web服务器，所以在此我们知道请求行的这个部分就可以了
+在http请求报文中比较重要的部分就是--请求行--这部分了，除此之外有时候还会用到首部行中的host主机IP属性和cookies信息，其他的部分都不太重要；由于我们需要实现的是一个静态的web服务器，所以在此我们知道请求行的这个部分就可以了
 
-
-
-接下来请牢记http请求和响应的报文格式;
+接下来先看一下http请求和响应的报文格式，以便我们书写代码时更加规范
 
 ![image-20210120113049431](https://github.com/cgq1314520/blog-img/blob/main/image-20210120113049431.png)
 
@@ -96,132 +110,6 @@ Content-Type:image/gif;image/ico;image/jpg
 响应内容的主体，比如是一个html文件的内容、或者是一个jpg文件的内容的二进制流                                                                                                     
 ```
 
-
-
-
-
 **注意点：**对于流媒体的响应
 
-对于流媒体的响应也是通过HTTP协议进行直接传输的，也即如视频、音频等的传输，其实就是http请求的$*/*$这种请求中包含的内容，但是我们又知道一般所有的流媒体，他们占用的内存都比较大，所以其实是在我们点击时才开始响应的，==同时服务端对于流媒体的数据流响应，即使我们用的是while循环一只写，但是在这个里面其实当写一部分流媒体内容后就会停止了，以保证响应的快速==，其实就是下面的这种效果
-
-![image-20210120170436982](https://github.com/cgq1314520/blog-img/blob/main/image-20210120170436982.png)
-
-也即上面的四个流媒体，当我们点击其中一个音频或者视频时，我们必须要等到该视频播放完后，点击另外一首才能开始播放，否则是没有效果的，造成这个的主要原因是由于我们的服务端是单线程的，由于之前我们说的，对于流媒体在while循环里面即使是一直在写出，但是由于为了快速响应，所以在写出一段后就会等待，等到播放到这儿后才会继续进行传输，所以这也是为什么当当前的一首播放时，另外一首不能播放的原因，因为当前是单线程，所以其实是阻塞在while循环里面，等待着给客户端输出流的，所以等到一首播放完之后，才能回到while（true）的部分继续接受响应。具体的流传输如下代码所示：
-
-![image-20210120171357113](https://github.com/cgq1314520/blog-img/blob/main/image-20210120171357113.png)
-
-所以在上面的这种单线程模型下，如果一首歌没有播放完，那么点击其他的播放按钮就不会响应，这是因为当前的一个音频还阻塞在while循环这儿，所以没有响应，同时这个也是为什么在响应html之后，输出中会抛出异常的原因；
-
-单线程请求时异常为：
-
-![image-20210120172521760](https://github.com/cgq1314520/blog-img/blob/main/image-20210120172521760.png)
-
-![image-20210120172551323](https://github.com/cgq1314520/blog-img/blob/main/image-20210120172551323.png)
-
-?       单线程模型代码如下：
-
-```java
-package com.server.singleThread;
-
-import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-/**
- * @author cgq
- * @version 2021.1.1-1
- * @deprecated web服务器的单线程模型
- */
-public class SingleThread1 {
-    public static void web(ServerSocket server){
-        // new Thread(new Runnable() {
-        //    @Override
-        //   public void run() {
-        Socket socket=null;
-        FileInputStream fis=null;
-        try {
-            //使用accept方法获取到请求的客户端对象(浏览器)
-           socket = server.accept();
-            //使用Socket对象中的方法getInputStream,获取到网络字节输入流InputStream对象
-            InputStream is = socket.getInputStream();
-            //使用网络字节输入流InputStream对象中的方法read读取客户端的请求信息
-
-            //把is网络字节输入流对象,转换为字符缓冲输入流
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            //把客户端请求信息的第一行读取出来 GET /11_Net/web/index.html HTTP/1.1
-            String line = br.readLine();
-            System.out.println(line);
-            //把读取的信息进行切割,只要中间部分 /11_Net/web/index.html
-            String[] arr = line.split(" ");
-            //把路径前边的/去掉,进行截取 11_Net/web/index.html
-            String htmlpath = arr[1].substring(1);
-
-            //创建一个本地字节输入流,构造方法中绑定要读取的html路径
-            fis = new FileInputStream("C:\\Users\\Administrator\\Desktop\\web\\"+htmlpath);
-            //使用Socket中的方法getOutputStream获取网络字节输出流OutputStream对象
-            OutputStream os = socket.getOutputStream();
-
-            // 写入HTTP协议响应头,固定写法
-            os.write("HTTP/1.1 200 OK\r\n".getBytes());
-            os.write("Content-Type:text/html\r\n".getBytes());
-            // 根据http响应的格式，在此必须要写入空行,否则浏览器不解析
-            os.write("\r\n".getBytes());
-
-            //一读一写复制文件,把服务读取的html文件回写到客户端，也即写入响应体
-            int len = 0;
-            byte[] bytes = new byte[2048];
-            while((len = fis.read(bytes))!=-1){
-                System.out.println("开始传输"+htmlpath+"文件，长度为"+len);
-                os.write(bytes,0,len);
-            }
-            System.out.println(htmlpath+"文件传输成功");
-
-
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        finally {
-            //释放资源
-            try {
-                if(fis!=null){
-                    fis.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                if(socket!=null){
-                    socket.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    public static void main(String[] args) {
-        //创建一个服务器ServerSocket,和系统要指定的端口号
-        ServerSocket server = null;
-        try {
-            server = new ServerSocket(8080);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        /*
-            浏览器解析服务器回写的html页面,页面中如果有图片,那么浏览器就会单独的开启一个线程,读取服务器的图片
-            我们就的让服务器一直处于监听状态,客户端请求一次,服务器就回写一次
-         */
-        for (int i=0;;i++){
-            if(server!=null){
-                web(server);
-            }
-        }
-          //  }).start();
-       // }
-    }
-
-}
-
-```
-
-?          
-
-###      所以推出结论：在单线程中，不要用流媒体，要用就用一个流媒体就好了，如果想要用多个流媒体，就用多线程模型
+在我们的这个web服务器上，对于流媒体的传输也是直接通过HTTP协议进行直接传输的，但是由于流媒体占用的内容太大，导致在单线程时只有一个流媒体可响应，直至此个响应完成之后，其他才能响应，所以在单线程中不推荐去实现流媒体的响应，但是对于多线程、线程池等web服务器模型，对于此个是支持的。
