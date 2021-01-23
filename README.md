@@ -70,30 +70,28 @@
 ![image-20210120113049431](https://github.com/cgq1314520/blog-img/blob/main/image-20210120113049431.png)
 
 **请求报文的实例：**
-
-> GET /102.html?name=cgq&password=123 HTTP/1.1     请求行
-> Host: localhost:8888
-> Connection: keep-alive
-> Upgrade-Insecure-Requests: 1
-> User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36
-> Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
-> Sec-Fetch-Site: none
-> Sec-Fetch-Mode: navigate
-> Sec-Fetch-User: ?1
-> Sec-Fetch-Dest: document
-> Accept-Encoding: gzip, deflate, br
-> Accept-Language: zh-CN,zh;q=0.9,en;q=0.8
-> Cookie: UM_distinctid=174b40effd4281-086a8ed1aac0b3-376b4502-1fa400-174b40effd5261; CNZZDATA155540=cnzz_eid%3D516937032-1600747108-%26ntime%3D1600747108; __utmz=111872281.1603867462.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); __utma=111872281.423618548.1603867462.1603884164.1603957706.3; Idea-8296e770=dacd4b86-eb35-4597-9b48-1c0d6bae2cc9; theme=#EE10EA                                                                                                                                                                                这儿有个空行，其上方都是首部行，下面就是请求报文的实体部分，通常是为空
->
-> ?                                                                                                
+```properties
+ GET /102.html?name=cgq&password=123 HTTP/1.1     请求行
+ Host: localhost:8888
+ Connection: keep-alive
+ Upgrade-Insecure-Requests: 1
+ User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36
+ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+ Sec-Fetch-Site: none
+ Sec-Fetch-Mode: navigate
+ Sec-Fetch-User: ?1
+ Sec-Fetch-Dest: document
+ Accept-Encoding: gzip, deflate, br
+ Accept-Language: zh-CN,zh;q=0.9,en;q=0.8                                                                                                                                       这儿有个空行，其上方都是首部行，下面就是请求报文的实体部分，通常是为空
+ ```
+                                                                                               
 
 **响应报文的实例：**
-
-> HTTP/1.1 200 OK                                状态行                                                                                                                                                      Content-Length:1222                                                                                                                                                                           Connection:close                                                                                                                                                                                            Content-Type:image/gif;image/ico;image/jpg           
->
-> 这儿有一个空行，    上面的都是首部行，下面的代表的是响应的主体
->
-> 响应内容的主体，比如是一个html文件的内容、或者是一个jpg文件的内容的二进制流                                                                                                                                                     
+```properties
+> HTTP/1.1 200 OK                                状态行                                                                                                                           >Content-Length:1222                                                                                                                                                             >Connection:close                                                                                                                                                               > Content-Type:image/gif;image/ico;image/jpg           
+> 这儿有一个空行，上面的都是首部行，下面的代表的是响应的主体
+> 响应内容的主体，比如是一个html文件的内容、或者是一个jpg文件的内容的二进制流                                                                                                     
+```
 
 
 
