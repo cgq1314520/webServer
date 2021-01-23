@@ -60,7 +60,9 @@
 
 #### 5.pageCache包下的代码实现服务器的页面缓存模型
 对于页面缓存的核心逻辑实现是通过以下的哈希表结构实现的
+
 ![image-1](https://github.com/cgq1314520/blog-img/blob/main/1.png)
+
 也即对于页面的缓存其实就是通过一个hash表的结构进行缓存的，其中对于页面的替换算法实现了如LRU\LFU等的页面替换算法
 
 - log.properties同单线程模型所述
