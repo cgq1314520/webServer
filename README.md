@@ -82,15 +82,19 @@
  Sec-Fetch-User: ?1
  Sec-Fetch-Dest: document
  Accept-Encoding: gzip, deflate, br
- Accept-Language: zh-CN,zh;q=0.9,en;q=0.8                                                                                                                                       这儿有个空行，其上方都是首部行，下面就是请求报文的实体部分，通常是为空
+ Accept-Language: zh-CN,zh;q=0.9,en;q=0.8                                                                                                                                       
+ 这儿有个空行，其上方都是首部行，下面就是请求报文的实体部分，通常是为空
  ```
                                                                                                
 
 **响应报文的实例：**
 ```properties
-> HTTP/1.1 200 OK                                状态行                                                                                                                           >Content-Length:1222                                                                                                                                                             >Connection:close                                                                                                                                                               > Content-Type:image/gif;image/ico;image/jpg           
-> 这儿有一个空行，上面的都是首部行，下面的代表的是响应的主体
-> 响应内容的主体，比如是一个html文件的内容、或者是一个jpg文件的内容的二进制流                                                                                                     
+HTTP/1.1 200 OK      状态行                                                                                                                           
+Content-Length:1222                                                                                                                                                    
+Connection:close                                                                                                                                                               > 
+Content-Type:image/gif;image/ico;image/jpg           
+这儿有一个空行，上面的都是首部行，下面的代表的是响应的主体
+响应内容的主体，比如是一个html文件的内容、或者是一个jpg文件的内容的二进制流                                                                                                     
 ```
 
 
