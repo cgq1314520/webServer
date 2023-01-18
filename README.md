@@ -84,6 +84,9 @@
 
 ![image-20210120113049431](https://github.com/cgq1314520/blog-img/blob/main/image-20210120113049431.png)
 
+#### 7.nio包下的代码实现了服务器的nio系统模型
+ 通过nio的模式来接收并处理请求,log.properties中新增的web.static.file.path项代表着请求的静态文件从哪里获取
+
 **请求报文的实例：**
 ```properties
  GET /102.html?name=cgq&password=123 HTTP/1.1     请求行
